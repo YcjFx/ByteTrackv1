@@ -76,7 +76,8 @@ class COCOEvaluator:
         tensor_type = torch.cuda.HalfTensor if half else torch.cuda.FloatTensor
         model = model.eval()
         if half:
-            model = model.half()
+            # model = model.half()
+            model = model.float()
         ids = []
         data_list = []
         progress_bar = tqdm if is_main_process() else iter

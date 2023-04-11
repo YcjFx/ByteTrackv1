@@ -63,20 +63,34 @@ def plot_tracking(image, tlwhs, obj_ids, scores=None, frame_id=0, fps=0., ids2=N
     line_thickness = 3
 
     radius = max(5, int(im_w/140.))
-    cv2.putText(im, 'frame: %d fps: %.2f num: %d' % (frame_id, fps, len(tlwhs)),
-                (0, int(15 * text_scale)), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), thickness=2)
+    # cv2.putText(im, 'frame: %d fps: %.2f num: %d' % (frame_id, fps, len(tlwhs)),
+    #             (0, int(15 * text_scale)), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), thickness=2)
 
     for i, tlwh in enumerate(tlwhs):
         x1, y1, w, h = tlwh
         intbox = tuple(map(int, (x1, y1, x1 + w, y1 + h)))
         obj_id = int(obj_ids[i])
-        id_text = '{}'.format(int(obj_id))
+        # id_text = '{}'.format(int(obj_id))
+        id_text = '{}{:d}'.format("",int(obj_id))
         if ids2 is not None:
             id_text = id_text + ', {}'.format(int(ids2[i]))
         color = get_color(abs(obj_id))
         cv2.rectangle(im, intbox[0:2], intbox[2:4], color=color, thickness=line_thickness)
-        cv2.putText(im, id_text, (intbox[0], intbox[1]), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255),
-                    thickness=text_thickness)
+        #修改显示颜色
+        # cv2.putText(im, id_text, (intbox[0], intbox[1]), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255),
+        #             thickness=text_thickness)
+        # cv2.putText(im, id_text, (intbox[0], intbox[1]), cv2.FONT_HERSHEY_PLAIN, text_scale, color=color,
+        #             thickness=text_thickness)
+
+        # t_size = cv2.getTextSize(id_text, cv2.FONT_HERSHEY_PLAIN, 2, 2)[0]
+        # cv2.rectangle(im, (x1, y1), (x1 + 2 + 3, y1 + 2 + 4), color, -1)
+        cv2.putText(im, id_text, (int(x1), int(y1 + 4 + 6)), cv2.FONT_HERSHEY_PLAIN, 2, (255, 255, 255), 2)
+
+        #画下中心点
+        # 下中心点
+        cv2.circle(im, (int((x1 + x1+w) / 2), int(y1+h)), 1, (0, 255, 0), 6)
+
+
     return im
 
 

@@ -34,7 +34,7 @@ def get_exp_by_name(exp_name):
     exp_path = os.path.join(yolox_path, "exps", "default", filename)
     return get_exp_by_file(exp_path)
 
-
+#获取模型
 def get_exp(exp_file, exp_name):
     """
     get Exp object by file or name. If exp_file and exp_name

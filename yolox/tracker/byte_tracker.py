@@ -10,6 +10,8 @@ from .kalman_filter import KalmanFilter
 from yolox.tracker import matching
 from .basetrack import BaseTrack, TrackState
 
+
+# 这个类是用来存放轨迹的，每个轨迹都有一些自己的属性，例如id、边界框、预测框、状态等等
 class STrack(BaseTrack):
     shared_kalman = KalmanFilter()
     def __init__(self, tlwh, score):
@@ -142,6 +144,9 @@ class STrack(BaseTrack):
         return 'OT_{}_({}-{})'.format(self.track_id, self.start_frame, self.end_frame)
 
 
+
+
+# 正片开始
 class BYTETracker(object):
     def __init__(self, args, frame_rate=30):
         self.tracked_stracks = []  # type: list[STrack]
@@ -158,13 +163,16 @@ class BYTETracker(object):
 
     def update(self, output_results, img_info, img_size):
         self.frame_id += 1
-        activated_starcks = []
-        refind_stracks = []
-        lost_stracks = []
-        removed_stracks = []
+        activated_starcks = []  #保存当前帧匹配到持续追踪的轨迹
+        refind_stracks = []   #保存当前帧匹配到之前目标丢失的轨迹
+        lost_stracks = []   #保存当前帧没有匹配到目标的轨迹
+        removed_stracks = []  #保存当前帧
 
+        # 第一步：将objects转换为x1，y1，x2，y2，score的格式，并构建strack
         if output_results.shape[1] == 5:
+            #检测框分数,置信度
             scores = output_results[:, 4]
+            # 检测框
             bboxes = output_results[:, :4]
         else:
             output_results = output_results.cpu().numpy()
@@ -174,11 +182,12 @@ class BYTETracker(object):
         scale = min(img_size[0] / float(img_h), img_size[1] / float(img_w))
         bboxes /= scale
 
-        remain_inds = scores > self.args.track_thresh
+        # 第二步：根据scroe和track_thresh将strack分为detetions(dets)(>=)和detections_low(dets_second)
+        remain_inds = scores > self.args.track_thresh      #track_thresh，追踪阈值
         inds_low = scores > 0.1
         inds_high = scores < self.args.track_thresh
 
-        inds_second = np.logical_and(inds_low, inds_high)
+        inds_second = np.logical_and(inds_low, inds_high)   #  筛选分数处于0.1<分数<阈值的
         dets_second = bboxes[inds_second]
         dets = bboxes[remain_inds]
         scores_keep = scores[remain_inds]
@@ -192,8 +201,10 @@ class BYTETracker(object):
             detections = []
 
         ''' Add newly detected tracklets to tracked_stracks'''
+        # 遍历tracked_stracks（所有的轨迹），如果track还activated，加入tracked_stracks（继续匹配该帧），否则加入unconfirmed
         unconfirmed = []
         tracked_stracks = []  # type: list[STrack]
+        # is_activated表示除了第一帧外中途只出现一次的目标轨迹（新轨迹，没有匹配过或从未匹配到其他轨迹）
         for track in self.tracked_stracks:
             if not track.is_activated:
                 unconfirmed.append(track)
@@ -328,3 +339,7 @@ def remove_duplicate_stracks(stracksa, stracksb):
     resa = [t for i, t in enumerate(stracksa) if not i in dupa]
     resb = [t for i, t in enumerate(stracksb) if not i in dupb]
     return resa, resb
+
+
+
+
